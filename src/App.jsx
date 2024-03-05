@@ -1,29 +1,51 @@
-import './App.css';
+import React, { useState, useEffect } from 'react';
 
-function App() {
+const FormularioPresupuesto = () => {
+  const [presupuesto, setPresupuesto] = useState('');
+  const [moneda, setMoneda] = useState('MXN');
+  const [tipoCambio, setTipoCambio] = useState(1);
+  const [monedasDisponibles, setMonedasDisponibles] = useState([]);
+
+  useEffect(() => {
+    const fetchMonedas = async () => {
+      try {
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/MXN');
+        const data = await response.json();
+        const monedas = Object.keys(data.rates);
+        const tiposCambio = Object.values(data.rates);
+        setMonedasDisponibles(monedas);
+        setTipoCambio(tiposCambio[0]);
+      } catch (error) {
+        console.error('Error fetching currencies:', error);
+      }
+    };
+
+    fetchMonedas();
+  }, []);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src="Octocat.png" className="App-logo" alt="logo" />
-        <p>
-          GitHub Codespaces <span className="heart">♥️</span> React
-        </p>
-        <p className="small">
-          Edit <code>src/App.jsx</code> and save to reload.
-        </p>
-        <p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </p>
-      </header>
-    </div>
+    <form onSubmit={handleSubmit}>
+      <input
+        type="number"
+        placeholder="Presupuesto total"
+        value={presupuesto}
+        onChange={(e) => setPresupuesto(e.target.value)}
+      />
+      <select value={moneda} onChange={(e) => setMoneda(e.target.value)}>
+        {monedasDisponibles.map((moneda) => (
+          <option key={moneda} value={moneda}>
+            {moneda} ({tipoCambio.toFixed(2)})
+          </option>
+        ))}
+      </select>
+      <button type="submit">Enviar</button>
+    </form>
   );
-}
+};
 
-export default App;
+export default FormularioPresupuesto;
